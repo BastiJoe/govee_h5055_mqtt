@@ -3,6 +3,7 @@ Govee H5055 BBQ Thermometer MQTT Gateway
 
 I started with Openhab recently. As i was looking for devices to connect, i thought about connecting my bbq thermometer (govee h5055) to openhab.
 As i am passionate in bbq, i thought it would be nice to have the charts of my next pulled pork on my raspberry.
+
 ![image](https://user-images.githubusercontent.com/47536246/156933357-ed17c286-0bf9-4eb4-ba4a-143f196c3c1e.png)
 
 I went on the internet to find a repo but there wasn't one on that specific device. But I found this great repo:
