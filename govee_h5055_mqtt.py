@@ -1,11 +1,12 @@
 #!/usr/bin/python
 '''
-This is a python Bluetooth advertisement scanner for the Govee brand Bluetooth
-temperature sensor.  Tested on model H5075 using Raspberry Pi 3.
-Temperature, humidity, and battery level is published as MQTT messages.
+This is a python Bluetooth advertisement scanner for the Govee brand Bluetooth BBQ
+temperature sensor.  Tested on model H5055 using Raspberry Pi 4.
+Temperatures are published as MQTT messages.
 
 Credit:  I used information for Govee advertisement format from
 github.com/Thrilleratplay/GoveeWatcher
+github.com/tsaitsai/govee_bluetooth_gateway
 
 Install dependencies:
  sudo apt-get install python3-pip libglib2.0-dev
@@ -14,10 +15,10 @@ Install dependencies:
  sudo pip3 install paho-mqtt
 
 Needs sudo to run on Raspbian
-sudo python3 govee_ble_mqtt_pi.py
+sudo python3 govee_h5055_mqtt.py
 
 Run in background
-sudo nohup python3 govee_ble_mqtt_pi.py &
+sudo nohup python3 govee_h5055_mqtt.py &
 
 '''
 
