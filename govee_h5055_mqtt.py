@@ -38,7 +38,7 @@ def on_message(client, userdata, msg):
     
 client = mqtt.Client()
 mqtt_prefix = "/sensor/govee"
-mqtt_gateway_name = "/Mosquitto"
+mqtt_gateway_name = "/Mosquitto/"
 
 debug = []
 
