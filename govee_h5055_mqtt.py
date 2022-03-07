@@ -41,6 +41,7 @@ mqtt_prefix = "/sensor/govee"
 mqtt_gateway_name = "/Mosquitto/"
 
 debug = []
+received_channels = []
 
 class ScanDelegate(DefaultDelegate):
     
@@ -61,8 +62,10 @@ class ScanDelegate(DefaultDelegate):
                 debug.append(adv_list)
                 with open('adv_list.pickle', 'wb') as handle:
                     pickle.dump(debug, handle, protocol=pickle.HIGHEST_PROTOCOL)
-            print(isNewData)
+            #print(isNewData)
             #check if received data is payload
+            
+            
             if (adv_list[0][2] == "05") & isNewData:
                 
                 
@@ -70,17 +73,21 @@ class ScanDelegate(DefaultDelegate):
                 
                 print("manuf data = ", adv_manuf_data)
                 
-                #read channel1 measured value, low byte, high byte switched
+                #read channel a measured value, low byte, high byte switched
                 sensor_a_meas = int(adv_manuf_data[16:18] + adv_manuf_data[14:16], 16)
                 sensor_a_low = int(adv_manuf_data[20:22] + adv_manuf_data[18:20], 16)
                 sensor_a_high = int(adv_manuf_data[24:26] + adv_manuf_data[22:24], 16)
-                
+                #read channel b measured value, low byte, high byte switched
                 sensor_b_meas = int(adv_manuf_data[30:32] + adv_manuf_data[28:30], 16)
                 sensor_b_low = int(adv_manuf_data[34:36] + adv_manuf_data[32:34], 16)
                 sensor_b_high = int(adv_manuf_data[38:40] + adv_manuf_data[36:38], 16)
                 
+                #Read Battery charge
+                bat_hex = adv_manuf_data[8:10]
+                bat_int = int(bat_hex,16)
                 
-                #extract Channel number
+                
+                #extract Payload Channel number
                 ch_hex = adv_manuf_data[10:12]
                 ch_int = int(ch_hex,16)
                 #keep only the first 2 bits
@@ -89,7 +96,13 @@ class ScanDelegate(DefaultDelegate):
                 ch_nr = format(ch_int, "08b")
                 #extract channel number from first 2 bits
                 channel = 2*int(ch_nr[0:2],2) + 1
-                
+                if not (channel in received_channels):
+                    publish_data = True
+                    received_channels.append(channel)
+                    print("publishing data")
+                else:
+                    publish_data = False
+                    print("already published")
                 #check in lower 6 bits, if channel is connected
                 #die beiden Bitmuster mit AND verknüpfen, und schauen, ob der Sensor connected ist
                 #z.B. Sensor 5 => 2**5 = 32 mit Bitmuster 10 0000
@@ -102,24 +115,26 @@ class ScanDelegate(DefaultDelegate):
                 signal = dev.rssi
                 mqtt_topic = mqtt_prefix + mqtt_gateway_name + mac + "/"
                 #client.publish(mqtt_topic+"alarm", alarm, qos=0)
-                
-                if ch_a_connected:
-                    #print("mac=", mac, "   percent humidity ", hum_percent, "   temp_F = ", temp_F, "   battery percent=", battery_percent, "  rssi=", signal)
-                    mqtt_topic = mqtt_prefix + mqtt_gateway_name + mac + "/Channel_" + str(channel) + "/"
-
-                    #client.publish(mqtt_topic+"rssi", signal, qos=0)
-                    client.publish(mqtt_topic+"temp", sensor_a_meas, qos=0)
-                    client.publish(mqtt_topic+"low", sensor_a_low, qos=0)
-                    client.publish(mqtt_topic+"high", sensor_a_high, qos=0)
-                
-                if ch_b_connected:
-                    #client.publish(mqtt_topic+"battery_pct", battery_percent, qos=0)
-                    mqtt_topic = mqtt_prefix + mqtt_gateway_name + mac + "/Channel_" + str(channel + 1) + "/"
-        
-                    #client.publish(mqtt_topic+"rssi", signal, qos=0)
-                    client.publish(mqtt_topic+"temp", sensor_b_meas, qos=0)
-                    client.publish(mqtt_topic+"low", sensor_b_low, qos=0)
-                    client.publish(mqtt_topic+"high", sensor_b_high, qos=0)
+                if publish_data:
+                    client.publish(mqtt_topic+"batt", bat_int, qos=0)
+                    
+                    if ch_a_connected:
+                        #print("mac=", mac, "   percent humidity ", hum_percent, "   temp_F = ", temp_F, "   battery percent=", battery_percent, "  rssi=", signal)
+                        mqtt_topic = mqtt_prefix + mqtt_gateway_name + mac + "/Channel_" + str(channel) + "/"
+    
+                        #client.publish(mqtt_topic+"rssi", signal, qos=0)
+                        client.publish(mqtt_topic+"temp", sensor_a_meas, qos=0)
+                        client.publish(mqtt_topic+"low", sensor_a_low, qos=0)
+                        client.publish(mqtt_topic+"high", sensor_a_high, qos=0)
+                    
+                    if ch_b_connected:
+                        #client.publish(mqtt_topic+"battery_pct", battery_percent, qos=0)
+                        mqtt_topic = mqtt_prefix + mqtt_gateway_name + mac + "/Channel_" + str(channel + 1) + "/"
+            
+                        #client.publish(mqtt_topic+"rssi", signal, qos=0)
+                        client.publish(mqtt_topic+"temp", sensor_b_meas, qos=0)
+                        client.publish(mqtt_topic+"low", sensor_b_low, qos=0)
+                        client.publish(mqtt_topic+"high", sensor_b_high, qos=0)
                 
                 
             sys.stdout.flush()
@@ -133,5 +148,5 @@ client.on_connect = on_connect
 client.on_message = on_message
 
 #while True:
-scanner.scan(5.0, passive=True)
+scanner.scan(10.0, passive=True)
 
