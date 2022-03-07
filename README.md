@@ -12,20 +12,20 @@ Thanks to Eric!
 
 It took me some time to decode the bits and bytes of the govee communication but now it is working.
 
+Install instuctions
 
-sample payload:
+cd ~
 
-manuf data =  cf040400464906ffffffff2c01061700ffff2c010000
+git clone https://github.com/BastiJoe/govee_h5055_mqtt
 
-![image](https://user-images.githubusercontent.com/47536246/156933808-df32e4ac-7358-4c9b-bde4-50370c3df9e8.png)
+cd ~/govee_h5055_mqtt/
 
-The Data comes in three payloads (containing data for 2 of the 6 sensors)
-The Channel Byte indicates the payload number 0, 1 or 2 (indicated by the highest 2 Bits) as well as a connection state of all 6 sensors (lowest 6 bits)
+sudo python3 govee_h5055_mqtt.py
 
-Example: 
+I am using it with crontab
 
-0xBE
+sudo crontab -e
 
-1011 1110
+add this line to run script every minute:
 
-The payload is for sensors 5 and 6. Sensors 2, 3, 4, 5, 6 are connected. Sensor 1 is not connected.
+*/1 * * * * python3 /home/pi/govee_h5055_mqtt/govee_h5055_mqtt.py
